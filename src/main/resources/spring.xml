@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+
+    <bean id="consoleEventLogger" class="local.logger.impl.ConsoleEventLogger"/>
+    <bean id="dateFormat" class="java.text.DateFormat" factory-method="getDateTimeInstance"/>
+
+    <bean id="event" class="local.event.Event" scope="prototype">
+        <constructor-arg>
+            <bean class="java.util.Date"/>
+        </constructor-arg>
+        <constructor-arg ref="dateFormat"/>
+    </bean>
+
+    <bean id="fileEventLogger" class="local.logger.impl.FileEventLogger" init-method="init">
+        <constructor-arg value="/home/wildfly/appinfo/appinfo/log.txt"/>
+    </bean>
+
+    <bean id="cacheFileEventLogger" class="local.logger.impl.CacheFileEventLogger" destroy-method="destroy">
+        <constructor-arg value="/home/wildfly/appinfo/appinfo/log.txt"/>
+        <constructor-arg value="3"/>
+    </bean>
+
+    <!-- injects to Client constructor-->
+    <bean id="client" class="local.Client">
+        <constructor-arg value="1"/>
+        <constructor-arg value="Ivan Ivanov"/>
+        <!-- If we need order
+        <constructor-arg index="0" value="1"/>
+        <constructor-arg index="1" value="Ivan Ivanov"/>
+        -->
+        <!--If we need arg type
+        <constructor-arg type="java.lang.Integer" value="1"/>
+        <constructor-arg type="java.lang.String" value="1"/>
+        -->
+        <!-- if we want to inject by arguments name
+        <constructor-arg name="id" value="1"/>
+        <constructor-arg name="fullName" value="Ivan Ivanov"/>
+        -->
+    </bean>
+
+    <!-- injects to App constructor -->
+    <bean id="app" class="local.App">
+        <constructor-arg ref="client"/>
+        <constructor-arg ref="cacheFileEventLogger"/>
+    </bean>
+</beans>
