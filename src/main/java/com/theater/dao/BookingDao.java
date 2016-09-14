@@ -10,7 +10,10 @@ import java.util.List;
  */
 public interface BookingDao {
     boolean save(User user, Ticket ticket);
+
     boolean save(User user, List<Ticket> ticket);
+
     boolean remove(User user);
+
     List<Ticket> getTicket(User user);
 }
