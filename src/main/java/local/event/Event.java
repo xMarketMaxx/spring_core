@@ -1,6 +1,7 @@
 package local.event;
 
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -19,6 +20,12 @@ public class Event {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public static boolean isDay() {
+        Date date = new Date();
+        Long hours = date.getTime() % (24 * 3600);
+        return (hours / 3600) >= 8 && (hours / 3600) <= 17 ? true : false;
     }
 
     @Override

@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-                            http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+ 		http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+ 		http://www.springframework.org/schema/context
+ 		http://www.springframework.org/schema/context/spring-context-3.2
+ 		xsdhttp://www.springframework.org/schema/aop
+ 		http://www.springframework.org/schema/aop/spring-aop-3.2.xsd">
 
     <bean id="consoleEventLogger" class="local.logger.impl.ConsoleEventLogger"/>
     <bean id="dateFormat" class="java.text.DateFormat" factory-method="getDateTimeInstance"/>
@@ -18,15 +24,24 @@
         <constructor-arg value="/home/wildfly/appinfo/appinfo/log.txt"/>
     </bean>
 
-    <bean id="cacheFileEventLogger" class="local.logger.impl.CacheFileEventLogger" destroy-method="destroy">
-        <constructor-arg value="/home/wildfly/appinfo/appinfo/log.txt"/>
+    <bean id="cacheFileEventLogger" class="local.logger.impl.CacheFileEventLogger" parent="fileEventLogger">
         <constructor-arg value="3"/>
+    </bean>
+
+    <bean id="combinedEventLogger" class="local.logger.impl.CombinedEventLogger">
+        <constructor-arg>
+            <list>
+                <ref bean="cacheFileEventLogger"/>
+                <ref bean="consoleEventLogger"/>
+            </list>
+        </constructor-arg>
     </bean>
 
     <!-- injects to Client constructor-->
     <bean id="client" class="local.Client">
-        <constructor-arg value="1"/>
-        <constructor-arg value="Ivan Ivanov"/>
+        <constructor-arg value="${id}"/>
+        <constructor-arg value="${name}"/>
+        <property name="greeting" value="${greeting}"/>
         <!-- If we need order
         <constructor-arg index="0" value="1"/>
         <constructor-arg index="1" value="Ivan Ivanov"/>
@@ -44,6 +59,31 @@
     <!-- injects to App constructor -->
     <bean id="app" class="local.App">
         <constructor-arg ref="client"/>
-        <constructor-arg ref="cacheFileEventLogger"/>
+        <constructor-arg value="#{T(local.event.Event).isDay() ? fileEventLogger : consoleEventLogger}"/>
+        <!--<constructor-arg>-->
+        <!--<map>-->
+        <!--<entry key="INFO" value-ref="consoleEventLogger"/>-->
+        <!--<entry key="ERROR" value-ref="combinedEventLogger"/>-->
+        <!--</map>-->
+        <!--</constructor-arg>-->
     </bean>
+
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <!-- List of files that should be loaded -->
+        <property name="locations">
+            <list>
+                <value>classpath:client.properties</value>
+            </list>
+        </property>
+        <!-- Ignore the abscent resource -->
+        <property name="ignoreResourceNotFound" value="true"/>
+        <!-- The system prop will be checked firstly, or can be override -->
+        <property name="systemPropertiesMode" value="2"/>
+    </bean>
+
+    <bean id="aspectLogger" class="local.logger.impl.LoggingAspect"/>
+
+    <context:annotation-config/>
+    <context:aspectj-autoproxy/>
+
 </beans>

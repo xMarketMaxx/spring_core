@@ -6,6 +6,7 @@ package local;
 public class Client {
     private String id;
     private String fullName;
+    private String greeting;
 
     public Client(String id, String fullName) {
         this.id = id;
@@ -26,5 +27,22 @@ public class Client {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getGreeting() {
+        return greeting;
+    }
+
+    public void setGreeting(String greeting) {
+        this.greeting = greeting;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("id: ").append(id);
+        sb.append(" fullName: ").append(fullName);
+        sb.append(" greeting: ").append(greeting);
+        return sb.toString();
     }
 }

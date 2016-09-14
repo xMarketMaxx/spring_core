@@ -8,6 +8,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by Maksym_Pinchuk on 9/7/2016.
@@ -16,14 +17,27 @@ public class App {
 
     private Client client;
     private EventLogger eventLogger;
+    private Map<EventType, EventLogger> loggers;
 
-    App(Client client, EventLogger eventLogger) {
+    App(Client client, EventLogger eventLogger) {//, Map<EventType//, EventLogger> loggers) {
         this.client = client;
         this.eventLogger = eventLogger;
+//        this.loggers = loggers;
     }
 
-    public void logEvent(Event event) {
-        eventLogger.logEvent(event);
+    public void logEvent(EventType type, String msg) {
+//        EventLogger logger = loggers.get(type);
+//        if (logger == null) {
+//            logger = eventLogger;
+//        }
+        EventLogger logger = eventLogger;
+        Event event = new Event(new Date(), DateFormat.getDateInstance(1));
+        event.setMsg(msg);
+        logger.logEvent(event);
+    }
+
+    public Client getClient() {
+        return this.client;
     }
 
     public static void main(String[] args) {
@@ -31,14 +45,13 @@ public class App {
         ApplicationContext ctx = new ClassPathXmlApplicationContext("spring.xml");
         App app = (App) ctx.getBean("app");
 
-        Event customEvent = new Event(new Date(), DateFormat.getDateTimeInstance());
-        customEvent.setMsg("My message!");
+        for (int i = 0; i < 10; i++)
+            app.logEvent(EventType.ERROR, "My message error:" + i);
 
-        app.logEvent(new Event(new Date(), DateFormat.getDateTimeInstance()));
-        app.logEvent(new Event(new Date(), DateFormat.getDateInstance(1)));
-        app.logEvent(customEvent);
-        app.logEvent(new Event(new Date(), DateFormat.getDateTimeInstance()));
-        app.logEvent(new Event(new Date(), DateFormat.getDateInstance(3)));
+        for (int i = 0; i < 5; i++)
+            app.logEvent(EventType.INFO, "My console message:" + i);
+
+        app.logEvent(EventType.ERROR, app.getClient().toString());
 
         ConfigurableApplicationContext context = (ConfigurableApplicationContext) ctx;
         context.close();
